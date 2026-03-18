@@ -14,6 +14,16 @@ struct NOAAPointResponse: Codable {
 
 struct PointProperties: Codable {
     let forecast: String
+    let relativeLocation: RelativeLocation
+}
+
+struct RelativeLocation: Codeable {
+    let properties: RelativeLocationProperties
+}
+
+struct RelativeLocationProperties: Codeable {
+    let city: String
+    let state: String
 }
 
 struct NOAAForecastResponse: Codable {
@@ -85,6 +95,10 @@ func getDayForecast() async -> ForecastPeriod?{
     
     // Now we are going to fetch the actual forecast.
     let forecastURLString = pointResult.properties.forecast
+    
+    // Setting the location of the coordinates.
+    let city = pointResult.properties.relativeLocation.properties.city
+    let state = pointResult.properties.relativeLocation.properties.state
     
     guard let forecastURL = URL(string: forecastURLString) else {
         print("Error. Could not create URL from string: \(forecastURLString)")
