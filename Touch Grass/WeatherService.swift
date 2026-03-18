@@ -2,8 +2,8 @@
 //  WeatherService.swift
 //  Touch Grass
 //
-//  Created by Lily Bozeman on 3/1/26.
-//
+
+import Foundation
 
 struct NOAAPointResponse: Codable {
     let properties: PointProperties
@@ -47,18 +47,8 @@ struct ForecastPeriod: Codable {
     let icon: String
 }
 
-import Foundation
-
-func getLocationInfo() async -> LocationInfo? {
-    // These are the coordinates of San Diego State University.
-    
-    let latitude = 32.774799;
-    let longitude = -117.071869;
-    
-    // Once we get the request from api.weather.gov for our specific coordinates,
-    // 1. We verify that the response was good (a 200 return type)
-    // we have to parse the JSON return into data.
-    
+func getLocationInfo(latitude: Double, longitude: Double) async -> LocationInfo? {
+    // Create a URL for the User's location.
     let pointURLString = "https://api.weather.gov/points/\(latitude),\(longitude)"
     
     guard let pointURL = URL(string: pointURLString) else {
@@ -66,6 +56,7 @@ func getLocationInfo() async -> LocationInfo? {
         return nil
     }
     
+    // Config for the http request.
     var pointRequest = URLRequest(url: pointURL)
     pointRequest.setValue("application/geo+json", forHTTPHeaderField: "Accept")
     pointRequest.setValue("TouchGrass, test@test.com", forHTTPHeaderField: "User-Agent")
@@ -73,6 +64,7 @@ func getLocationInfo() async -> LocationInfo? {
     let pointData: Data
     let pointResponse: URLResponse
     
+    // Requesting a weather station.
     do {
         (pointData, pointResponse) = try await URLSession.shared.data(for: pointRequest)
         print("Successfully retrieved weather data from: \(pointURL)")
@@ -81,6 +73,7 @@ func getLocationInfo() async -> LocationInfo? {
         return nil
     }
     
+    // If we get a good http response, then continue.
     if let httpResponse = pointResponse as? HTTPURLResponse {
         if httpResponse.statusCode != 200 {
             print("expected 200 but got \(httpResponse.statusCode)")
@@ -89,6 +82,7 @@ func getLocationInfo() async -> LocationInfo? {
     }
     
     
+    // Decode the HTTP response into Json and return the location info in an object.
     do {
         let pointResult = try JSONDecoder().decode(NOAAPointResponse.self, from: pointData)
         let pointResultProperties = pointResult.properties

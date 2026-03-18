@@ -2,10 +2,9 @@
 //  ContentView.swift
 //  Touch Grass
 //
-//  Created by Lily Bozeman on 2/17/26.
-//
 
 import SwiftUI
+import CoreLocation
 
 struct ContentView: View {
     var body: some View {
@@ -16,6 +15,7 @@ struct ContentView: View {
 // This is a view that contains all of our forecast display.
 struct ForecastView: View {
     // State variables to hold our current forecast.
+    @State private var locationManager = LocationManager()
     @State private var forecast: ForecastPeriod? = nil
     @State private var location: LocationInfo? = nil
     
@@ -47,11 +47,16 @@ struct ForecastView: View {
                 Text("High: \(forecast.temperature)°\(forecast.temperatureUnit)")
                 Text(forecast.shortForecast)
             }
-        } .task {
-            // Get the location.
-            location = await getLocationInfo()
+        } .task (id: locationManager.location) {
+            // Get the user's current location on startup.
+            guard let cords = locationManager.location else {
+                return
+            }
             
-            // If the forecastURL has been loaded, then request the forecast.
+            // Get weather station forecast of the user's location.
+            location = await getLocationInfo(latitude: cords.latitude, longitude: cords.longitude)
+            
+            // If the forecastURL has been loaded, then request the daily forecast.
             if let forecastURL = location?.forecastURL {
                 forecast = await getDayForecast(forecastURLString: forecastURL)
             }
