@@ -270,7 +270,6 @@ struct ForecastView: View {
             .background(Color(white: 0.15))
             .cornerRadius(20)
             
-            
             .task (id: locationManager.location) {
                 // Get the user's current location on startup.
                 guard let cords = locationManager.location else {
@@ -283,6 +282,11 @@ struct ForecastView: View {
                 // If the forecastURL has been loaded, then request the daily forecast.
                 if let forecastURL = location?.forecastURL {
                     forecast = await getDayForecast(forecastURLString: forecastURL)
+                    
+                    // If there's a forecast 
+                    if let forecast = forecast {
+                        await scheduleWeatherNotification(forecast: forecast)
+                    }
                 }
                 
             }
