@@ -1,3 +1,15 @@
+# Touch Grass
+Have you ever gone outside and it's raining? That's the worst. When we're busy, its hard to keep up 
+with the weather. Instead of always guessing, Touch Grass notifies you for spontaneous outside activities
+and helps you be more aware of the weather.
+
+Touch grass is an improved weather app that provides not only forecasts, but notifications for when 
+the weather is good, a calendar view, optimized weather windows for activities you enjoy, and much
+more. 
+
+##### Target users: Type A planners or people who need to optimize for going outside.
+##### Mission: Make going outside easier. 
+
 ## Functionality
 ### LocationManager
 ##### What were we trying to achieve? 
