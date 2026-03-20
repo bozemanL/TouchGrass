@@ -15,7 +15,6 @@ struct Touch_GrassApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .preferredColorScheme(.dark)
             
             // Ask the user to allow notifications
             // We assign it to _ to tell the compiler that we are not using the result of this try.

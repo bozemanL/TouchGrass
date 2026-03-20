@@ -8,6 +8,7 @@ import CoreLocation
 
 struct ContentView: View {
     @State private var isMenuOpen = false
+    @AppStorage("isDarkMode") private var isDarkMode = true
     
     var body: some View {
         NavigationStack {
@@ -32,6 +33,7 @@ struct ContentView: View {
                 }
             }
         }
+        .preferredColorScheme(isDarkMode ? .dark : .light)
     }
 }
 
@@ -85,6 +87,24 @@ struct SideMenu: View {
                     
                     NavigationLink(destination: SevenDayForecastView()) {
                         MenuItemView(icon: "calendar", title: "7-Day Forecast")
+                    }
+                    .simultaneousGesture(TapGesture().onEnded {
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            isOpen = false
+                        }
+                    })
+                    
+                    NavigationLink(destination: CalendarView()) {
+                        MenuItemView(icon: "calendar.circle.fill", title: "Calendar")
+                    }
+                    .simultaneousGesture(TapGesture().onEnded {
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            isOpen = false
+                        }
+                    })
+                    
+                    NavigationLink(destination: SettingsView()) {
+                        MenuItemView(icon: "gear", title: "Settings")
                     }
                     .simultaneousGesture(TapGesture().onEnded {
                         withAnimation(.easeInOut(duration: 0.3)) {
@@ -283,7 +303,7 @@ struct ForecastView: View {
                 if let forecastURL = location?.forecastURL {
                     forecast = await getDayForecast(forecastURLString: forecastURL)
                     
-                    // If there's a forecast 
+                    // If there's a forecast
                     if let forecast = forecast {
                         await scheduleWeatherNotification(forecast: forecast)
                     }
@@ -298,4 +318,3 @@ struct ForecastView: View {
 #Preview {
     ContentView()
 }
-
