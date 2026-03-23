@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		2A835A8F2F71CD4200A1A9A0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2A835A8E2F71CD4200A1A9A0 /* Assets.xcassets */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		2AA2D9362F452C3C00404F94 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -24,6 +28,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		2A835A8E2F71CD4200A1A9A0 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2AA2D9282F452C3B00404F94 /* Touch Grass.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Touch Grass.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		2AA2D9352F452C3C00404F94 /* Touch GrassTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Touch GrassTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		2AA2D93F2F452C3C00404F94 /* Touch GrassUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Touch GrassUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -75,6 +80,7 @@
 		2AA2D91F2F452C3B00404F94 = {
 			isa = PBXGroup;
 			children = (
+				2A835A8E2F71CD4200A1A9A0 /* Assets.xcassets */,
 				2AA2D92A2F452C3B00404F94 /* Touch Grass */,
 				2AA2D9382F452C3C00404F94 /* Touch GrassTests */,
 				2AA2D9422F452C3C00404F94 /* Touch GrassUITests */,
@@ -212,6 +218,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2A835A8F2F71CD4200A1A9A0 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
