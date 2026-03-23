@@ -1,50 +1,55 @@
 # Touch Grass
-Have you ever gone outside and it's raining? That's the worst. When we're busy, its hard to keep up 
-with the weather. Instead of always guessing, Touch Grass notifies you for spontaneous outside activities
-and helps you be more aware of the weather.
+Have you ever rushed outside, excited for the sun, and got caught in the rain? When life gets busy, keeping up with the weather shouldn't be a chore. **Touch Grass** takes care of that. It sends you smart notifications when conditions are perfect for heading outside so that you can stop guessing and start going outside.
 
-Touch grass is an improved weather app that provides not only forecasts, but notifications for when 
-the weather is good, a calendar view, optimized weather windows for activities you enjoy, and much
-more. 
+Touch grass is an improved weather app that delivers 7 day forecasts, a calendar view of upcoming weather, and proactive notifications when the weather is good.
 
 ##### Target users: Type A planners or people who need to optimize for going outside.
 ##### Mission: Make going outside easier. 
 
-## Functionality
-### LocationManager
-##### What were we trying to achieve? 
-We want to grab the user's location to get the nearest weather station to provide forecasts. 
+## Architecture
+### `WeatherStore`
+The central data store for the app, using SwiftUI's `@Observable` macro. It owns the `LocationManager`, fetches weather from the NOAA once a location is available, and exposes forecast data (including today's forecast) to all views via the environment.
 
-##### What are the constraints?
-Location is considered a private thing. So, when the user first downloads the app, we must ask them for
-permission to use their location.
+### `LocationManager`
+Handles all CoreLocation interactions. Configured for city-level accuracy (`kCLLocationAccuracyThreeKilometers`) to minimize privacy impact. Requests "when in use" authorization, fires a single location update, then stops — keeping battery usage low.
 
-##### Where can you find the LocationManager?
-You can find the `LocationManager` file inside the main project directory. There we handle getting the location
-and parsing it into coordinates. We then hand those coordinates to the WeatherService to request forecasts.
+### `WeatherService`
+Contains all NOAA API logic. Uses a two-step fetch:
+1. **Points endpoint** (`api.weather.gov/points/{lat},{lon}`) — resolves coordinates to a weather station and returns a forecast URL and city/state info.
+2. **Forecast endpoint** — fetches all forecast periods (day/night pairs) from the URL returned in step 1.
 
-### Notifications
-##### What were we trying to achieve? 
-We want notifications to the user whenever there is nice weather outside for today.
+### `NotificationService`
+Schedules a repeating local notification when today's forecast is sunny and above freezing. Handles the NOAA `shortForecast` string to detect sunny/clear conditions. Removes any previously scheduled notification before adding a new one to avoid duplicates.
 
-##### What are the constraints?
-Notifications are typically only sent if the app is closed. For testing reasons, we want the notifications
-to still show up whether or not the app is open. By default, iOS hides the notification, so we devided to 
-override iOS's notification behavior in this regard. 
+### `Touch_GrassApp`
+App entry point. Requests notification authorization on first launch and installs a `UNUserNotificationCenterDelegate` to override iOS's default behavior of suppressing notifications while the app is in the foreground — useful for testing and demos.
 
-##### Where can you find the NotificationService?
-You can find all notification related functionality inside the `NotificationService` file. In the `Touch_GrassApp` file
-there is a 2 small functions that override the iOS default and then the `NotificationService` handles the sending and
-creation of the notifications.
+---
 
-### NOAA weather requesting
-##### What were we trying to achieve? 
-We are trying to fetch current weather data for our users based on their location. 
+| View | Description |
+|------|-------------|
+| `ContentView` | Root view. Houses the `NavigationStack`, slide-out side menu, and injects `WeatherStore` into the environment. |
+| `ForecastView` | Home screen. Displays today's weather icon, high temperature, and short forecast for the user's location. |
+| `SevenDayForecastView` | Scrollable list of the next 7 daytime forecast periods with icons and temperatures. |
+| `CalendarView` | Monthly calendar with weather icons and temperatures overlaid on days within the 7-day forecast window. Supports forward/backward month navigation. |
+| `SettingsView` | Toggle dark mode, enable/disable weather alerts, and view app version info. |
 
-##### What are the constraints?
-We considered using apple's WeatherKit which would have been a way easier way to fetch weather data for the user's current location. 
-However, in order to use WeatherKit, you must have a paid apple developer account. Therefore, we decided to go the free route, which
-just means we have to program fetching and processing weather data ourselves. 
+---
 
-##### Where can you find the NOAA weather implementation?
-The NOAA weather implementation is in the file `WeatherService`. There are comments inside that break down the code.
+## Technical Notes
+**Why NOAA instead of WeatherKit?**  
+Apple's WeatherKit requires a paid Apple Developer account. NOAA's API is free, public, and provides sufficient forecast data for this use case.
+
+**Notification behavior in the foreground**  
+By default, iOS suppresses notifications when the app is active. The `NotificationDelegate` class in `Touch_GrassApp` overrides `willPresent` to always show banners and play sounds, making it easier to test and demonstrate notification functionality.
+
+**Forecast period indexing**  
+NOAA returns alternating day/night forecast periods. The app uses even-indexed periods (0, 2, 4, ...) to extract daytime forecasts for the 7-day view and calendar.
+
+---
+
+## Requirements
+- iOS 17+ (uses `@Observable` macro)
+- Location permissions ("When In Use")
+- Notification permissions (requested on first launch)
+- Internet connection (NOAA API)
