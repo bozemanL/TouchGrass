@@ -6,6 +6,7 @@
 import SwiftUI
 
 struct CalendarView: View {
+    @Environment(WeatherStore.self) private var store
     @State private var currentDate = Date()
     @State private var displayedMonth = Date()
     
@@ -133,7 +134,7 @@ struct CalendarView: View {
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 7), spacing: 8) {
                     ForEach(0..<daysInMonth.count, id: \.self) { index in
                         if let date = daysInMonth[index] {
-                            CalendarDayCell(date: date, currentDate: currentDate)
+                            CalendarDayCell(date: date, currentDate: currentDate, periods: store.periods)
                         } else {
                             // Empty cell for days outside current month
                             Color.clear
@@ -154,15 +155,12 @@ struct CalendarView: View {
 struct CalendarDayCell: View {
     let date: Date
     let currentDate: Date
+    let periods: [ForecastPeriod]
     
-    private var calendar: Calendar {
-        Calendar.current
-    }
+    private var calendar: Calendar { Calendar.current }
     
     // Check if this is today
-    private var isToday: Bool {
-        calendar.isDateInToday(date)
-    }
+    private var isToday: Bool { calendar.isDateInToday(date) }
     
     // Check if this date is within the 14-day forecast range (today + 13 days)
     private var isInForecastRange: Bool {
@@ -171,7 +169,7 @@ struct CalendarDayCell: View {
         
         // Calculate days from today
         if let daysDifference = calendar.dateComponents([.day], from: today, to: cellDay).day {
-            return daysDifference >= 0 && daysDifference <= 13
+            return daysDifference >= 0 && daysDifference <= 6
         }
         return false
     }
@@ -180,6 +178,26 @@ struct CalendarDayCell: View {
     private var dayNumber: String {
         let day = calendar.component(.day, from: date)
         return "\(day)"
+    }
+    
+    private var matchingPeriod: ForecastPeriod? {
+        let today = calendar.startOfDay(for: Date())
+        let cellDay = calendar.startOfDay(for: date)
+        
+        guard let daysFromToday = calendar.dateComponents([.day], from: today, to: cellDay).day,
+              daysFromToday >= 0 else { return nil }
+        
+        // Each day = 2 periods (day + night), daytime is the even index
+        let periodIndex = daysFromToday * 2
+        guard periodIndex < periods.count else { return nil }
+        
+        return periods[periodIndex]
+    }
+    
+    private var dayOfWeekName: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EEEE"
+        return formatter.string(from: date)
     }
     
     var body: some View {
@@ -191,24 +209,30 @@ struct CalendarDayCell: View {
                 .foregroundColor(isToday ? .white : .primary)
             
             if isInForecastRange {
-                // Weather icon placeholder (only for 14-day forecast range)
-                RoundedRectangle(cornerRadius: 4)
-                    .fill(Color.gray.opacity(0.3))
+                if let period = matchingPeriod {
+                    AsyncImage(url: URL(string: period.icon)) { image in
+                        image.resizable().scaledToFit()
+                    } placeholder: {
+                        ProgressView()
+                    }
                     .frame(width: 30, height: 30)
-                    .overlay(
-                        Image(systemName: "cloud.sun.fill")
-                            .foregroundColor(.secondary)
-                            .font(.caption)
-                    )
-                
-                // Temperature placeholder
-                Text("--°")
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
+                    .cornerRadius(4)
+                    
+                    Text("\(period.temperature)°")
+                        .font(.caption2)
+                        .foregroundColor(isToday ? .white : .secondary)
+                }
+                else {
+                    // Empty space for days outside forecast range
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(Color.gray.opacity(0.3))
+                        .frame(width: 30, height: 30)
+                    Text("--°")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                }
             } else {
-                // Empty space for days outside forecast range
-                Spacer()
-                    .frame(height: 38)
+                Spacer().frame(height: 38)
             }
         }
         .frame(height: 80)

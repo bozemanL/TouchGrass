@@ -9,10 +9,7 @@ import SwiftUI
 import CoreLocation
 
 struct ForecastView: View {
-    // State variables to hold our current forecast.
-    @State private var locationManager = LocationManager()
-    @State private var forecast: ForecastPeriod? = nil
-    @State private var location: LocationInfo? = nil
+    @Environment(WeatherStore.self) private var store
     
     var body: some View {
         VStack(spacing: 20) {
@@ -25,14 +22,14 @@ struct ForecastView: View {
             // If the location of the forecast exists, show the location.
             
             VStack(spacing: 15) {
-                if let location = location {
+                if let location = store.location {
                     Text("\(location.city), \(location.state)")
                         .foregroundColor(.secondary)
                 }
                 
                 
                 // If the forecast exists, display forecast information.
-                if let forecast = forecast {
+                if let forecast = store.todayForecast {
                     // This is an icon retrieved from NOAA api.
                     AsyncImage (url: URL(string: forecast.icon)) {
                         image in image
@@ -60,27 +57,6 @@ struct ForecastView: View {
             .padding()
             .background(Color(uiColor: .secondarySystemBackground))
             .cornerRadius(20)
-            
-            .task (id: locationManager.location) {
-                // Get the user's current location on startup.
-                guard let cords = locationManager.location else {
-                    return
-                }
-                
-                // Get weather station forecast of the user's location.
-                location = await getLocationInfo(latitude: cords.latitude, longitude: cords.longitude)
-                
-                // If the forecastURL has been loaded, then request the daily forecast.
-                if let forecastURL = location?.forecastURL {
-                    forecast = await getDayForecast(forecastURLString: forecastURL)
-                    
-                    // If there's a forecast
-                    if let forecast = forecast {
-                        await scheduleWeatherNotification(forecast: forecast)
-                    }
-                }
-                
-            }
         }
         .navigationBarTitleDisplayMode(.inline)
     }

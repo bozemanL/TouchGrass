@@ -99,46 +99,17 @@ func getLocationInfo(latitude: Double, longitude: Double) async -> LocationInfo?
 
 
 
-func getDayForecast(forecastURLString: String) async -> ForecastPeriod? {
-    // Convert the forecastURLString from string type to URL type.
-    guard let forecastURL = URL(string: forecastURLString) else {
-        print("Error: could not create URL from string: \(forecastURLString)")
-        return nil
-    }
-    
-    // Forecast request variables.
+func getAllForecastPeriods(forecastURLString: String) async -> [ForecastPeriod] {
+    guard let forecastURL = URL(string: forecastURLString) else { return [] }
+
     var forecastRequest = URLRequest(url: forecastURL)
-    let forecastData: Data
-    let forecastResponse: URLResponse
-    
-    // Configurations on the forecast request.
     forecastRequest.setValue("application/geo+json", forHTTPHeaderField: "Accept")
     forecastRequest.setValue("TouchGrass, test@test.com", forHTTPHeaderField: "User-Agent")
-    
-   
-    
-    // Requesting the forecast.
-    do {
-        (forecastData, forecastResponse) = try await URLSession.shared.data(for: forecastRequest)
-    } catch {
-        print("Error: Could not request forecast.")
-        return nil
-    }
-    
-    // HTTP Status code 200 means the request is successful.
-    // So we only want to accept HTTP status code 200.
-    if let forecastHTTPResponse = forecastResponse as? HTTPURLResponse {
-        if forecastHTTPResponse.statusCode != 200 {
-            return nil
-        }
-    }
-    
-    // Return the forecast if it can be decoded.
-    do {
-        let forecastResult = try JSONDecoder().decode(NOAAForecastResponse.self, from: forecastData)
-        return forecastResult.properties.periods[0]
-    } catch {
-        print("Decoding error for forecast.")
-        return nil
-    }
+
+    guard let (forecastData, forecastResponse) = try? await URLSession.shared.data(for: forecastRequest),
+          let httpResponse = forecastResponse as? HTTPURLResponse,
+          httpResponse.statusCode == 200 else { return [] }
+
+    let result = try? JSONDecoder().decode(NOAAForecastResponse.self, from: forecastData)
+    return result?.properties.periods ?? []
 }

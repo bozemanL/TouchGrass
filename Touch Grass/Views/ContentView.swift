@@ -9,6 +9,7 @@ import CoreLocation
 struct ContentView: View {
     @State private var isMenuOpen = false
     @AppStorage("isDarkMode") private var isDarkMode = true
+    @State private var weatherStore = WeatherStore()
     
     var body: some View {
         NavigationStack {
@@ -33,7 +34,11 @@ struct ContentView: View {
                 }
             }
         }
+        .environment(weatherStore)
         .preferredColorScheme(isDarkMode ? .dark : .light)
+        .task(id: weatherStore.locationManager.location) {
+            await weatherStore.load()
+        }
     }
 }
 
@@ -145,97 +150,6 @@ struct MenuItemView: View {
         .padding(.horizontal, 20)
         .padding(.vertical, 15)
         .contentShape(Rectangle())
-    }
-}
-
-// 7-Day Forecast View
-struct SevenDayForecastView: View {
-    // Generate array of next 7 days starting from today
-    private var forecastDays: [(label: String, date: Date)] {
-        let calendar = Calendar.current
-        let today = Date()
-        
-        return (0..<7).map { dayOffset in
-            let date = calendar.date(byAdding: .day, value: dayOffset, to: today)!
-            let label: String
-            
-            if dayOffset == 0 {
-                label = "Today"
-            } else {
-                // Format the date to get the day of the week (Monday, Tuesday, etc.)
-                let formatter = DateFormatter()
-                formatter.dateFormat = "EEEE"
-                label = formatter.string(from: date)
-            }
-            
-            return (label: label, date: date)
-        }
-    }
-    
-    var body: some View {
-        VStack(spacing: 0) {
-            // Header
-            Text("7-Day Forecast")
-                .font(.largeTitle)
-                .fontWeight(.bold)
-                .padding(.top, 20)
-                .padding(.bottom, 20)
-            
-            // Scrollable list of forecast days
-            ScrollView {
-                VStack(spacing: 12) {
-                    ForEach(0..<forecastDays.count, id: \.self) { index in
-                        DayForecastRow(dayLabel: forecastDays[index].label)
-                    }
-                }
-                .padding(.horizontal)
-            }
-        }
-        .navigationBarTitleDisplayMode(.inline)
-    }
-}
-
-// Individual day forecast row
-struct DayForecastRow: View {
-    let dayLabel: String
-    
-    var body: some View {
-        HStack {
-            // Day of week label
-            Text(dayLabel)
-                .font(.title3)
-                .fontWeight(.semibold)
-                .foregroundColor(.primary)
-                .frame(width: 120, alignment: .leading)
-            
-            Spacer()
-            
-            // PLACEHOLDER FOR FORECAST ICON
-            RoundedRectangle(cornerRadius: 8)
-                .fill(Color.gray.opacity(0.3))
-                .frame(width: 50, height: 50)
-                .overlay(
-                    Image(systemName: "cloud.sun.fill")
-                        .foregroundColor(.secondary)
-                        .font(.title2)
-                )
-            
-            // PLACEHOLDER FOR TEMP
-            VStack(alignment: .trailing, spacing: 4) {
-                Text("--°")
-                    .font(.title3)
-                    .fontWeight(.medium)
-                    .foregroundColor(.primary)
-                
-                Text("--°")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-            }
-            .frame(width: 60, alignment: .trailing)
-        }
-        .padding()
-        .background(Color(uiColor: .secondarySystemBackground))
-        .cornerRadius(12)
     }
 }
 
