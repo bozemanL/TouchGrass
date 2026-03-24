@@ -96,14 +96,13 @@ struct SideMenu: View {
                         .padding(.bottom, 10)
                     
                     // Menu Items
-                    NavigationLink(destination: ForecastView()) {
-                        MenuItemView(icon: "house.fill", title: "Home")
-                    }
-                    .simultaneousGesture(TapGesture().onEnded {
+                    Button(action: {
                         withAnimation(.easeInOut(duration: 0.3)) {
                             isOpen = false
                         }
-                    })
+                    }) {
+                        MenuItemView(icon: "house.fill", title: "Home")
+                    }
                     
                     NavigationLink(destination: SevenDayForecastView()) {
                         MenuItemView(icon: "calendar", title: "7-Day Forecast")

@@ -51,8 +51,10 @@ struct ForecastView: View {
                 }
             }
             .padding()
+            .frame(minWidth: 200)
             .background(Color(uiColor: .secondarySystemBackground))
             .cornerRadius(20)
+            .padding(.horizontal, 50)
         }
         .navigationBarTitleDisplayMode(.inline)
     }
