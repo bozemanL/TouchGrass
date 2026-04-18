@@ -88,10 +88,16 @@ func scheduleWeatherNotification(forecast: ForecastPeriod) async {
     // Read frequency preference (in minutes), default 60
     // Get frequency preference in minutes from the settings
     // The default is 1 minute.
-    let intervalMinutes = UserDefaults.standard.object(forKey: "notificationIntervalMinutes") as? Int ?? 1
+    // Read frequency preference in minutes.
+    // Default to 60 minutes (1 hour) if nothing has been saved yet.
+    let savedMinutes = UserDefaults.standard.integer(forKey: "notificationIntervalMinutes")
+    let intervalMinutes = savedMinutes > 0 ? savedMinutes : 60
     let intervalSeconds = TimeInterval(intervalMinutes * 60)
-    
-    let trigger = UNTimeIntervalNotificationTrigger(timeInterval: intervalSeconds, repeats: true)
+
+    let trigger = UNTimeIntervalNotificationTrigger(
+        timeInterval: intervalSeconds,
+        repeats: true
+    )
     let request = UNNotificationRequest(identifier: "weather-notification", content: content, trigger: trigger)
     
     // Add the request to the notification center.
